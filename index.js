@@ -13,7 +13,7 @@ dotenv.config();
 
 const port = 5000;
 
-mongoose.connect(process.env.MONGO_URL)
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.h1m0xzj.mongodb.net/chatApp?retryWrites=true&w=majority`)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.log(err.message));
 
