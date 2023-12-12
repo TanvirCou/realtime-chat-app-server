@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require('cors');
-const fileUpload = require('express-fileupload');
 const userHandler = require("./routeHandler/userHandler");
 const chatHandler = require("./routeHandler/chatHandler");
 const messageHandler = require("./routeHandler/messageHandler");
@@ -11,9 +10,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 dotenv.config();
-app.use(fileUpload({
-    useTempFiles: true
-}));
 
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("Connected to MongoDB"))
@@ -38,7 +34,7 @@ io.on("connection", (socket) => {
     console.log("Connected to socket");
 
     socket.on("setup", (userData) => {
-        socket.join(userData._id);
+        socket.join(userData?._id);
         socket.emit("connected");
     });
 
@@ -58,11 +54,11 @@ io.on("connection", (socket) => {
     socket.on("new message", (newMessageReceived) => {
         var chat = newMessageReceived.chat;
 
-        if(!chat.users) {
+        if (!chat.users) {
             console.log("chat users not defined");
         } else {
             chat.users.forEach(user => {
-                if(user._id === newMessageReceived.sender._id) {
+                if (user._id === newMessageReceived.sender._id) {
                     return;
                 } else {
                     socket.in(user._id).emit("message received", newMessageReceived);

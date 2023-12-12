@@ -14,47 +14,45 @@ const api_key = process.env.API_KEY;
 const api_secret = process.env.API_SECRET;
 
 cloudinary.config({
-  cloud_name: cloud_name,
-  api_key: api_key,
-  api_secret: api_secret,
+    cloud_name: cloud_name,
+    api_key: api_key,
+    api_secret: api_secret,
 });
 
 
-router.post("/signUp", async(req, res) => {
-    
+router.post("/signUp", async (req, res) => {
+
     try {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-        let img;
-
-        if(req?.files?.file) {
-            const file = req.files.file;
-            try {
-            const result = await cloudinary.uploader.upload(file.tempFilePath);
-            img = result.secure_url;
-            } catch(err) {
-                console.log(err);
-            }
+        if(req.body.pic === null) {
+            const newUser = await new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+            });
+    
+            const user = await newUser.save();
+            res.status(200).json(user);
+        } else {
+            const newUser = await new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                pic: req.body.pic
+            });
+    
+            const user = await newUser.save();
+            res.status(200).json(user);
         }
-        
 
-        const newUser = await new User({
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-            pic: img
-        });
-
-        const user = await newUser.save();
-        res.status(200).json(user);
-        
     } catch (err) {
         res.status(401).json(err.message);
     }
 });
 
-router.post("/login", async(req, res) => {
+router.post("/login", async (req, res) => {
     try {
         const user = await User.findOne({ email: req.body.email });
         if (user) {
@@ -63,9 +61,7 @@ router.post("/login", async(req, res) => {
                 const token = jwt.sign({
                     name: user.name,
                     userId: user._id,
-                }, process.env.JWT_SECRET, {
-                    expiresIn: '1h'
-                });
+                }, process.env.JWT_SECRET);
 
                 res.status(200).json({
                     user: user,
@@ -78,21 +74,21 @@ router.post("/login", async(req, res) => {
         } else {
             res.status(401).json("Authentication failed");
         }
-        
+
     } catch (err) {
         res.status(401).json(err);
     }
 });
 
-router.get("/", checkLogin, async(req, res) => {
-    const keyWord = req.query.search ? 
-    {$or: [ {name: {$regex: req.query.search, $options: "i"}}, {email: { $regex: req.query.search, $options: "i"}}],} 
-    : {};
+router.get("/", checkLogin, async (req, res) => {
+    const keyWord = req.query.search ?
+        { $or: [{ name: { $regex: req.query.search, $options: "i" } }, { email: { $regex: req.query.search, $options: "i" } }], }
+        : {};
 
     try {
-        const users = await User.find(keyWord).find({_id: { $ne: req.userId}});
+        const users = await User.find(keyWord).find({ _id: { $ne: req.userId } });
         res.status(200).json(users);
-    } catch(err) {
+    } catch (err) {
         res.status(500).json(err);
     }
 });

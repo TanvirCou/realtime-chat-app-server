@@ -6,10 +6,10 @@ const Message = require("../Schemas/MessageSchema");
 
 const router = express.Router();
 
-router.post("/send", checkLogin, async(req, res) => {
-    const { content, chatId} = req.body;
+router.post("/send", checkLogin, async (req, res) => {
+    const { content, chatId } = req.body;
 
-    if(content || chatId) {
+    if (content || chatId) {
 
         const newMessage = {
             sender: req.userId,
@@ -27,10 +27,10 @@ router.post("/send", checkLogin, async(req, res) => {
                 select: "name pic email"
             });
 
-            await Chat.findByIdAndUpdate(req.body.chatId, {latestMessage: message});
+            await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
 
             res.status(200).json(message);
-        } catch(err) {
+        } catch (err) {
             res.status(500).json(err);
         }
     } else {
@@ -38,13 +38,13 @@ router.post("/send", checkLogin, async(req, res) => {
     }
 });
 
-router.get("/:chatId", checkLogin, async(req, res) => {
+router.get("/:chatId", checkLogin, async (req, res) => {
     try {
-        const messages = await Message.find({chat: req.params.chatId})
-        .populate("sender", "name pic email")
-        .populate("chat");
+        const messages = await Message.find({ chat: req.params.chatId })
+            .populate("sender", "name pic email")
+            .populate("chat");
         res.status(200).json(messages);
-    } catch(err) {
+    } catch (err) {
         res.status(500).json(err);
     }
 });
