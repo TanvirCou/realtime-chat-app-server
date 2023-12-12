@@ -11,6 +11,8 @@ app.use(express.json());
 app.use(cors());
 dotenv.config();
 
+const port = 5000;
+
 mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.log(err.message));
@@ -19,9 +21,7 @@ app.use("/api/user", userHandler);
 app.use("/api/chat", chatHandler);
 app.use("/api/message", messageHandler);
 
-const server = app.listen(3000, () => {
-    console.log("Server started");
-});
+const server = app.listen(process.env.PORT || port);
 
 const io = require("socket.io")(server, {
     pingTimeout: 60000,
