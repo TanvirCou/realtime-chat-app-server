@@ -17,6 +17,10 @@ mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.log(err.message));
 
+app.get("/", (req, res) => {
+    res.send("Server working");
+});
+
 app.use("/api/user", userHandler);
 app.use("/api/chat", chatHandler);
 app.use("/api/message", messageHandler);
